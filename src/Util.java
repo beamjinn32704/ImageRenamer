@@ -236,62 +236,6 @@ public class Util {
         return JOptionPane.showConfirmDialog(frame, message, title, JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE);
     }
     
-    public static void startupShortcut(String lnkName, String relFilePath){
-        startupShortcut(lnkName, relFilePath, new String[0]);
-    }
-    
-    public static void startupShortcut(String lnkName, String relFilePath, String[] pastVers){
-        String shortcutParent = "C:\\users\\" + System.getProperty("user.name") + "\\AppData\\Roaming\\Microsoft\\Windows\\Start Menu\\Programs\\Startup";
-        for(int i = 0; i < pastVers.length; i++) {
-            File file = new File(shortcutParent, pastVers[i]);
-            if(file.isFile()) {
-                file.delete();
-            }
-        }
-        String lnk = lnkName + ".lnk";
-        if(new File(shortcutParent, lnk).exists()){
-            return;
-        }
-        File batch = new File("ShortcutMaker.bat");
-        try (PrintWriter writer = new PrintWriter(batch);){
-            writer.println("@echo off");
-            writer.println("set startupPath=\"c:\\users\\%username%\\AppData\\Roaming\\Microsoft\\Windows\\Start Menu\\Programs\\Startup\n"
-                    + "set exePath=\"%CD%\n"
-                    + "cd %startupPath%\n"
-                    + "echo Set oWS = WScript.CreateObject(\"WScript.Shell\") > %startupPath%\\CreateShortcut.vbs\n"
-                    + "echo sLinkFile = \"" + lnk + "\" >> %startupPath%\\CreateShortcut.vbs\n"
-                            + "echo Set oLink = oWS.CreateShortcut(sLinkFile) >> %startupPath%\\CreateShortcut.vbs\n"
-                            + "echo oLink.TargetPath = %exePath%\\" + relFilePath + "\" >> %startupPath%\\CreateShortcut.vbs\n"
-                                    + "echo oLink.WorkingDirectory = %startupPath%\" >> %startupPath%\\CreateShortcut.vbs\n"
-                                    + "echo oLink.Description = \"" + lnkName + "\" >> %startupPath%\\CreateShortcut.vbs\n"
-                                            + "echo oLink.Save >> %startupPath%\\CreateShortcut.vbs\n"
-                                            + "cd %startupPath%\n"
-                                            + "C:\\Windows\\System32\\cscript.exe %startupPath%\\CreateShortcut.vbs\n"
-                                            + "del CreateShortcut.vbs\n"
-                                            + "echo %CD%\n"
-                                            + "start " + lnk +"\n"
-                                                    + "cd %exePath%\n"
-                                                    +"(goto) 2>nul & del \"%~f0\" & exit /b");
-            Desktop.getDesktop().open(batch);
-        } catch (Exception e){
-            boolean fail = false;
-            if(batch.isFile()){
-                try {
-                    Runtime.getRuntime().exec(new String[]{"cmd", "/c", "start", batch.toString()});
-                } catch(Exception ex){
-                    fail = true;
-                    message(null, "Unable to set to open when computer starts!", "Error!");
-                }
-            } else {
-                fail = true;
-                message(null, "Unable to set to open when computer starts!", "Error!");
-            }
-            if(fail){
-                batch.delete();
-            }
-        }
-    }
-    
     public static JDialog showPan(JPanel pan, String title){
         return showPan(pan, title, JDialog.DISPOSE_ON_CLOSE);
     }
